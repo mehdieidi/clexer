@@ -6,7 +6,8 @@ const (
 	ILLEGAL = "ILLEGAL"
 	EOF     = "EOF"
 
-	IDENT   = "IDENT"
+	IDENT   = "IDENTIFIER"
+	TEXT    = "TEXT"
 	INTEGER = "INTEGER"
 	DECIMAL = "DECIMAL"
 
@@ -69,7 +70,7 @@ const (
 	CASE     = "CASE"
 	CHAR     = "CHAR"
 	CONST    = "CONST"
-	CONTINUE = "CONTINURE"
+	CONTINUE = "CONTINUE"
 	DEFAULT  = "DEFAULT"
 	DO       = "DO"
 	INT      = "INT"
