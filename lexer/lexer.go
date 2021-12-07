@@ -44,8 +44,25 @@ func (l *Lexer) NextToken() token.Token {
 
 	switch l.ch {
 	case '-':
-		col++
-		tok = newToken(token.MINUS, l.ch)
+		if l.peekChar() == '-' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.DEC, Literal: string(ch) + string(l.ch)}
+		} else if l.peekChar() == '=' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.MINUSAS, Literal: string(ch) + string(l.ch)}
+		} else if l.peekChar() == '>' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.ARROW, Literal: string(ch) + string(l.ch)}
+		} else {
+			col++
+			tok = newToken(token.MINUS, l.ch)
+		}
 	case '!':
 		if l.peekChar() == '=' {
 			col += 2
@@ -57,17 +74,55 @@ func (l *Lexer) NextToken() token.Token {
 			tok = newToken(token.EXCLA, l.ch)
 		}
 	case '/':
-		col++
-		tok = newToken(token.SLASH, l.ch)
+		if l.peekChar() == '=' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.DIVAS, Literal: string(ch) + string(l.ch)}
+		} else {
+			col++
+			tok = newToken(token.SLASH, l.ch)
+		}
 	case '*':
-		col++
-		tok = newToken(token.ASTERISK, l.ch)
+		if l.peekChar() == '=' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.MINUSAS, Literal: string(ch) + string(l.ch)}
+		} else {
+			col++
+			tok = newToken(token.ASTERISK, l.ch)
+		}
 	case '<':
-		col++
-		tok = newToken(token.ST, l.ch)
+		if l.peekChar() == '=' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.STEQ, Literal: string(ch) + string(l.ch)}
+		} else if l.peekChar() == '<' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.LSHIFT, Literal: string(ch) + string(l.ch)}
+		} else {
+			col++
+			tok = newToken(token.ST, l.ch)
+		}
 	case '>':
-		col++
-		tok = newToken(token.GT, l.ch)
+		if l.peekChar() == '=' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.GTEQ, Literal: string(ch) + string(l.ch)}
+		} else if l.peekChar() == '>' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.RSHIFT, Literal: string(ch) + string(l.ch)}
+		} else {
+			col++
+			tok = newToken(token.GT, l.ch)
+		}
 	case '=':
 		if l.peekChar() == '=' {
 			col += 2
@@ -78,9 +133,74 @@ func (l *Lexer) NextToken() token.Token {
 			col++
 			tok = newToken(token.ASSIGN, l.ch)
 		}
+	case '[':
+		col++
+		tok = newToken(token.LBRACK, l.ch)
+	case ']':
+		col++
+		tok = newToken(token.RBRACK, l.ch)
+	case ':':
+		col++
+		tok = newToken(token.COLON, l.ch)
+	case '?':
+		col++
+		tok = newToken(token.QUESTION, l.ch)
 	case ';':
 		col++
 		tok = newToken(token.SEMICOLON, l.ch)
+	case '%':
+		if l.peekChar() == '=' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.PERCENTAS, Literal: string(ch) + string(l.ch)}
+		} else {
+			col++
+			tok = newToken(token.PERCENT, l.ch)
+		}
+	case '&':
+		if l.peekChar() == '&' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.AND, Literal: string(ch) + string(l.ch)}
+		} else if l.peekChar() == '=' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.AMPERAS, Literal: string(ch) + string(l.ch)}
+		} else {
+			col++
+			tok = newToken(token.AMPERAS, l.ch)
+		}
+	case '^':
+		if l.peekChar() == '=' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.XORAS, Literal: string(ch) + string(l.ch)}
+		} else {
+			col++
+			tok = newToken(token.XOR, l.ch)
+		}
+	case '|':
+		if l.peekChar() == '=' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.PIPEAS, Literal: string(ch) + string(l.ch)}
+		} else if l.peekChar() == '|' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.OR, Literal: string(ch) + string(l.ch)}
+		} else {
+			col++
+			tok = newToken(token.PIPE, l.ch)
+		}
+	case '~':
+		col++
+		tok = newToken(token.TILDA, l.ch)
 	case '(':
 		col++
 		tok = newToken(token.LPAREN, l.ch)
@@ -91,8 +211,20 @@ func (l *Lexer) NextToken() token.Token {
 		col++
 		tok = newToken(token.COMMA, l.ch)
 	case '+':
-		col++
-		tok = newToken(token.PLUS, l.ch)
+		if l.peekChar() == '+' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.INC, Literal: string(ch) + string(l.ch)}
+		} else if l.peekChar() == '=' {
+			col += 2
+			ch := l.ch
+			l.readChar()
+			tok = token.Token{Type: token.PLUSAS, Literal: string(ch) + string(l.ch)}
+		} else {
+			col++
+			tok = newToken(token.PLUS, l.ch)
+		}
 	case '{':
 		col++
 		blockNo++
