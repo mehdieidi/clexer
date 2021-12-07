@@ -98,6 +98,9 @@ const (
 type Token struct {
 	Type    TokenType
 	Literal string
+	Row     uint
+	Col     uint
+	BlockNo uint
 }
 
 type TokenType string
