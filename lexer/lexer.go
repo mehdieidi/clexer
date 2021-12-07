@@ -6,7 +6,7 @@ import (
 )
 
 var (
-	row     uint
+	row     uint = 1
 	col     uint
 	blockNo uint
 )
@@ -107,10 +107,20 @@ func (l *Lexer) NextToken() token.Token {
 		if isLetter(l.ch) {
 			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
+
+			tok.Col = col
+			tok.Row = row
+			tok.BlockNo = blockNo
+
 			return tok
 		} else if isDigit(l.ch) {
 			tok.Type = token.INTEGER
 			tok.Literal = l.readNumber()
+
+			tok.Col = col
+			tok.Row = row
+			tok.BlockNo = blockNo
+
 			return tok
 		} else {
 			tok = newToken(token.ILLEGAL, l.ch)
@@ -127,7 +137,7 @@ func (l *Lexer) NextToken() token.Token {
 
 // skipWhiteSpace skips spaces, tabs, linefeeds, and also updates col and row numbers.
 func (l *Lexer) skipWhiteSpace() {
-	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' {
+	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		switch l.ch {
 		case ' ':
 			col++
