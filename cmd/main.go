@@ -18,10 +18,10 @@ func main() {
 	var tokens []token.Token
 	var tok token.Token
 
-	l := lexer.New(string(src))
+	lxr := lexer.New(string(src))
 
 	for tok.Type != token.EOF {
-		tok = l.NextToken()
+		tok = lxr.NextToken()
 		tokens = append(tokens, tok)
 	}
 
