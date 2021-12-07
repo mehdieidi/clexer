@@ -137,6 +137,7 @@ var keywords = map[string]TokenType{
 	"goto":     GOTO,
 }
 
+// checks to see if the ident is actually an identifier or a keyword.
 func LookupIdent(ident string) TokenType {
 	if tok, ok := keywords[ident]; ok {
 		return tok
