@@ -74,13 +74,13 @@ func (l *Lexer) NextToken() token.Token {
 			l.readChar()
 			col++
 			l.readChar()
-			l.lineComment(&tok)
+			tok = l.lineComment()
 			return tok
 		} else if l.peekChar() == '*' {
 			l.readChar()
 			col++
 			l.readChar()
-			l.blockComment(&tok)
+			tok = l.blockComment()
 			return tok
 		} else {
 			col++
@@ -145,8 +145,12 @@ func (l *Lexer) NextToken() token.Token {
 		if isLetter(l.peekChar()) || isEscapeSequence(l.peekChar()) {
 			txt := l.text()
 			tok = token.Token{Type: token.TEXT, Literal: txt}
-			col += 2
+			col++
 		}
+
+	case '.':
+		col++
+		tok = newToken(token.DOT, l.ch)
 
 	case '[':
 		col++
@@ -279,7 +283,7 @@ func (l *Lexer) NextToken() token.Token {
 
 			return tok
 		} else if isDigit(l.ch) {
-			l.readNum(&tok)
+			tok = l.readNum()
 			return tok
 		} else {
 			tok = newToken(token.ILLEGAL, l.ch)
@@ -306,7 +310,7 @@ func (l *Lexer) readChar() {
 	l.readPosition++
 }
 
-// skipWhiteSpace skips spaces, tabs, linefeeds, and also updates col and row numbers.
+// skipWhiteSpace skips whitespaces and also updates col and row numbers.
 func (l *Lexer) skipWhiteSpace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		switch l.ch {
@@ -322,18 +326,7 @@ func (l *Lexer) skipWhiteSpace() {
 	}
 }
 
-func newToken(tokenType token.TokenType, ch byte) token.Token {
-	return token.Token{Type: tokenType, Literal: string(ch)}
-}
-
-func isLetter(ch byte) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
-}
-
-func isDigit(ch byte) bool {
-	return '0' <= ch && ch <= '9'
-}
-
+// readIdentifier reads and returns a whole word also updates col.
 func (l *Lexer) readIdentifier() string {
 	position := l.position
 	for isLetter(l.ch) {
@@ -343,6 +336,7 @@ func (l *Lexer) readIdentifier() string {
 	return l.input[position:l.position]
 }
 
+// peekChar just returns the next char to be read.
 func (l *Lexer) peekChar() byte {
 	if l.readPosition >= len(l.input) {
 		return 0
@@ -351,8 +345,10 @@ func (l *Lexer) peekChar() byte {
 	}
 }
 
+// text returns the string between ""
 func (l *Lexer) text() string {
-	l.readChar()
+	l.readChar() // skip starting "
+	col++
 	position := l.position
 	for l.ch != '"' {
 		col++
@@ -361,33 +357,34 @@ func (l *Lexer) text() string {
 	return l.input[position:l.position]
 }
 
-func isEscapeSequence(ch byte) bool {
-	if ch == '\n' || ch == '\r' || ch == '\a' || ch == '\b' || ch == '\f' || ch == '\t' || ch == '\v' || ch == '\\' || ch == '\'' || ch == '\000' {
-		return true
-	}
-	return false
-}
+// lineComment returns a token of a line comment also updates row and col.
+func (l *Lexer) lineComment() token.Token {
+	var tok token.Token
 
-func (l *Lexer) lineComment(tok *token.Token) {
 	position := l.position
 	for l.ch != '\n' {
 		col++
 		l.readChar()
 	}
 
+	tok = token.Token{Type: token.COMMENT, Literal: l.input[position : l.position-1], Row: row, Col: col, BlockNo: blockNo}
+
+	l.readChar()
+
 	if l.ch == '\r' {
 		l.readChar()
 	}
 
-	*tok = token.Token{Type: token.COMMENT, Literal: l.input[position:l.position], Row: row, Col: col}
-
 	row++
 	col = 0
 
-	l.readChar()
+	return tok
 }
 
-func (l *Lexer) blockComment(tok *token.Token) {
+// blockComment returns a token of a block comment also updates row and col.
+func (l *Lexer) blockComment() token.Token {
+	var tok token.Token
+
 	position := l.position
 	for !(l.ch == '*' && l.peekChar() == '/') {
 		if l.ch == '\n' {
@@ -402,7 +399,7 @@ func (l *Lexer) blockComment(tok *token.Token) {
 		}
 	}
 
-	*tok = token.Token{Type: token.COMMENT, Literal: l.input[position:l.position], Row: row, Col: col}
+	tok = token.Token{Type: token.COMMENT, Literal: l.input[position:l.position], Row: row, Col: col, BlockNo: blockNo}
 
 	l.readChar()
 
@@ -413,9 +410,14 @@ func (l *Lexer) blockComment(tok *token.Token) {
 	col = 0
 
 	l.readChar()
+
+	return tok
 }
 
-func (l *Lexer) readNum(tok *token.Token) {
+// readNum reads a number either decimal or integer and returns the appropriate token also updates row and col.
+func (l *Lexer) readNum() token.Token {
+	var tok token.Token
+
 	position := l.position
 	for isDigit(l.ch) {
 		col++
@@ -427,17 +429,40 @@ func (l *Lexer) readNum(tok *token.Token) {
 	if l.ch == '.' {
 		l.readChar()
 		col++
+
 		position = l.position
 		for isDigit(l.ch) {
 			col++
 			l.readChar()
 		}
+
 		decPart := l.input[position:l.position]
 
-		*tok = token.Token{Type: token.DECIMAL, Literal: string(intPart) + "." + string(decPart), Row: row, Col: col, BlockNo: blockNo}
+		tok = token.Token{Type: token.DECIMAL, Literal: string(intPart) + "." + string(decPart), Row: row, Col: col, BlockNo: blockNo}
 
-		return
+		return tok
 	}
 
-	*tok = token.Token{Type: token.INTEGER, Literal: string(intPart), Row: row, Col: col, BlockNo: blockNo}
+	tok = token.Token{Type: token.INTEGER, Literal: string(intPart), Row: row, Col: col, BlockNo: blockNo}
+
+	return tok
+}
+
+func newToken(tokenType token.TokenType, ch byte) token.Token {
+	return token.Token{Type: tokenType, Literal: string(ch)}
+}
+
+func isLetter(ch byte) bool {
+	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
+}
+
+func isDigit(ch byte) bool {
+	return '0' <= ch && ch <= '9'
+}
+
+func isEscapeSequence(ch byte) bool {
+	if ch == '\n' || ch == '\r' || ch == '\a' || ch == '\b' || ch == '\f' || ch == '\t' || ch == '\v' || ch == '\\' || ch == '\'' || ch == '\000' {
+		return true
+	}
+	return false
 }
