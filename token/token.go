@@ -8,6 +8,7 @@ const (
 
 	IDENT   = "IDENTIFIER"
 	TEXT    = "TEXT"
+	COMMENT = "COMMENT"
 	INTEGER = "INTEGER"
 	DECIMAL = "DECIMAL"
 

@@ -70,6 +70,12 @@ func (l *Lexer) NextToken() token.Token {
 			ch := l.ch
 			l.readChar()
 			tok = token.Token{Type: token.DIVAS, Literal: string(ch) + string(l.ch)}
+		} else if l.peekChar() == '/' {
+			l.readChar()
+			col++
+			l.readChar()
+			l.lineComment(&tok)
+			return tok
 		} else {
 			col++
 			tok = newToken(token.SLASH, l.ch)
@@ -133,6 +139,7 @@ func (l *Lexer) NextToken() token.Token {
 		if isLetter(l.peekChar()) || isEscapeSequence(l.peekChar()) {
 			txt := l.text()
 			tok = token.Token{Type: token.TEXT, Literal: txt}
+			col += 2
 		}
 
 	case '[':
@@ -247,6 +254,7 @@ func (l *Lexer) NextToken() token.Token {
 		tok = newToken(token.LBRACE, l.ch)
 
 	case '}':
+		col++
 		blockNo--
 		tok = newToken(token.RBRACE, l.ch)
 
@@ -307,7 +315,7 @@ func (l *Lexer) skipWhiteSpace() {
 		case '\t':
 			col += 4
 		case '\n':
-			col = 1
+			col = 0
 			row++
 		}
 		l.readChar()
@@ -367,4 +375,23 @@ func isEscapeSequence(ch byte) bool {
 		return true
 	}
 	return false
+}
+
+func (l *Lexer) lineComment(tok *token.Token) {
+	position := l.position
+	for l.ch != '\n' {
+		col++
+		l.readChar()
+	}
+
+	if l.ch == '\r' {
+		l.readChar()
+	}
+
+	*tok = token.Token{Type: token.COMMENT, Literal: l.input[position:l.position], Row: row, Col: col}
+
+	row++
+	col = 0
+
+	l.readChar()
 }

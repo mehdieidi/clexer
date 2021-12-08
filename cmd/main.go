@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	src, err := os.ReadFile("../input/source.c")
+	src, err := os.ReadFile("./input/source.c")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -30,7 +30,7 @@ func main() {
 		log.Println("json marshalling failed")
 	}
 
-	jsonFile, err := os.Create("../output/tokens.json")
+	jsonFile, err := os.Create("./output/tokens.json")
 	if err != nil {
 		log.Println("creating json file failed")
 	}
