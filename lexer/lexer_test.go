@@ -1,17 +1,15 @@
 package lexer
 
 import (
+	"os"
 	"testing"
 
 	"github.com/MehdiEidi/clexer/token"
 )
 
 func TestNextToken(t *testing.T) {
-	input := `int main() {
-		int x = 4;
-
-	}
-`
+	src, _ := os.ReadFile("../input/source.c")
+	input := string(src)
 
 	tests := []struct {
 		expectedType    token.TokenType
@@ -20,17 +18,17 @@ func TestNextToken(t *testing.T) {
 		expectedCol     uint
 		expectedBlockNo uint
 	}{
-		{token.INT, "int", 0, 0, 0},
-		{token.IDENT, "main", 0, 4, 0},
-		{token.LPAREN, "(", 0, 8, 0},
-		{token.RPAREN, ")", 0, 9, 0},
-		{token.LBRACE, "{", 0, 11, 0},
-		{token.INT, "int", 1, 2, 1},
-		{token.IDENT, "x", 1, 6, 1},
-		{token.ASSIGN, "=", 1, 8, 1},
-		{token.INTEGER, "4", 1, 10, 1},
-		{token.SEMICOLON, ";", 1, 11, 1},
-		{token.RBRACE, "}", 3, 0, 0},
+		{token.INT, "int", 1, 3, 0},
+		{token.IDENT, "main", 1, 8, 0},
+		{token.LPAREN, "(", 1, 9, 0},
+		{token.RPAREN, ")", 1, 10, 0},
+		{token.LBRACE, "{", 1, 12, 1},
+		{token.INT, "int", 2, 7, 1},
+		{token.IDENT, "x", 2, 9, 1},
+		{token.ASSIGN, "=", 2, 11, 1},
+		{token.INTEGER, "4", 2, 13, 1},
+		{token.SEMICOLON, ";", 2, 14, 1},
+		{token.RBRACE, "}", 3, 1, 0},
 	}
 
 	l := New(input)
@@ -50,12 +48,12 @@ func TestNextToken(t *testing.T) {
 			t.Fatalf("tests[%d] - row number wrong. expected=%d, got=%d", i, tt.expectedRow, tok.Row)
 		}
 
-		// if tok.Col != tt.expectedCol {
-		// 	t.Fatalf("tests[%d] - col number wrong. expected=%d, got=%d", i, tt.expectedCol, tok.Col)
-		// }
+		if tok.Col != tt.expectedCol {
+			t.Fatalf("tests[%d] - col number wrong. expected=%d, got=%d", i, tt.expectedCol, tok.Col)
+		}
 
-		// if tok.BlockNo != tt.expectedBlockNo {
-		// 	t.Fatalf("tests[%d] - block number wrong. expected=%d, got=%d", i, tt.expectedBlockNo, tok.BlockNo)
-		// }
+		if tok.BlockNo != tt.expectedBlockNo {
+			t.Fatalf("tests[%d] - block number wrong. expected=%d, got=%d", i, tt.expectedBlockNo, tok.BlockNo)
+		}
 	}
 }
