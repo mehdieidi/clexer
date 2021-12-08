@@ -76,6 +76,12 @@ func (l *Lexer) NextToken() token.Token {
 			l.readChar()
 			l.lineComment(&tok)
 			return tok
+		} else if l.peekChar() == '*' {
+			l.readChar()
+			col++
+			l.readChar()
+			l.blockComment(&tok)
+			return tok
 		} else {
 			col++
 			tok = newToken(token.SLASH, l.ch)
@@ -273,12 +279,13 @@ func (l *Lexer) NextToken() token.Token {
 
 			return tok
 		} else if isDigit(l.ch) {
-			tok.Type = token.INTEGER
-			tok.Literal = l.readNumber()
+			l.readNum(&tok)
+			// tok.Type = token.INTEGER
+			// tok.Literal = l.readNumber()
 
-			tok.Col = col
-			tok.Row = row
-			tok.BlockNo = blockNo
+			// tok.Col = col
+			// tok.Row = row
+			// tok.BlockNo = blockNo
 
 			return tok
 		} else {
@@ -394,4 +401,59 @@ func (l *Lexer) lineComment(tok *token.Token) {
 	col = 0
 
 	l.readChar()
+}
+
+func (l *Lexer) blockComment(tok *token.Token) {
+	position := l.position
+	for !(l.ch == '*' && l.peekChar() == '/') {
+		if l.ch == '\n' {
+			row++
+			col = 0
+			l.readChar()
+		} else if l.ch == '\r' {
+			l.readChar()
+		} else {
+			col++
+			l.readChar()
+		}
+	}
+
+	*tok = token.Token{Type: token.COMMENT, Literal: l.input[position:l.position], Row: row, Col: col}
+
+	l.readChar()
+
+	if l.ch == '\r' {
+		l.readChar()
+	}
+
+	col = 0
+
+	l.readChar()
+}
+
+func (l *Lexer) readNum(tok *token.Token) {
+	position := l.position
+	for isDigit(l.ch) {
+		col++
+		l.readChar()
+	}
+
+	intPart := l.input[position:l.position]
+
+	if l.ch == '.' {
+		l.readChar()
+		col++
+		position = l.position
+		for isDigit(l.ch) {
+			col++
+			l.readChar()
+		}
+		decPart := l.input[position:l.position]
+
+		*tok = token.Token{Type: token.DECIMAL, Literal: string(intPart) + "." + string(decPart), Row: row, Col: col, BlockNo: blockNo}
+
+		return
+	}
+
+	*tok = token.Token{Type: token.INTEGER, Literal: string(intPart), Row: row, Col: col, BlockNo: blockNo}
 }

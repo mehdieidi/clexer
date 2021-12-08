@@ -48,6 +48,7 @@ const (
 	RSHIFT    = ">>"
 	LSHIFT    = "<<"
 	QUESTION  = "?"
+	DOT       = "."
 
 	// delimeters
 	COMMA     = ","
