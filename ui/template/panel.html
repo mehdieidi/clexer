@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>clexer</title>
+  <link rel="stylesheet" href="../static/style.css">
+  <link href="https://fonts.googleapis.com/css?family=Fira+Code:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="main-header-div">
+    <h1 class="main-header" style="margin-top:50px;">
+      clexer; lexical analyzer for C language
+    </h1>
+  </div>
+
+  <div id="app" class="container"><p>You can download the JSON file of the tokens or view them here.</p></div>
+
+  <div class="skills" id="skills">
+    <form enctype="multipart/form-data" action="/" method="get" style="display: inline-block;">
+        <button class="btn" type="submit" value="home" >Home</button>
+    </form>
+
+    <form enctype="multipart/form-data" action="/view" method="get" style="display: inline-block;">
+        <button class="btn" type="submit" value="view" >View</button>
+    </form>
+
+    <form enctype="multipart/form-data" action="/download" method="post" style="display: inline-block;">
+        <button class="btn" type="submit" value="getjson" >Get JSON</button>
+    </form>
+  </div>
+ 
+</body>
+</html>

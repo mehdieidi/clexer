@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>clexer</title>
+  <link rel="stylesheet" href="../static/style.css">
+  <link href="https://fonts.googleapis.com/css?family=Fira+Code:400,700&display=swap" rel="stylesheet">
+
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+  
+    td, th {
+      border: 1px solid #00aa00;
+      text-align: center;
+      padding: 18px;
+      color: #ffffff;
+      font-size: 20px;
+    }
+    
+    th {
+      color: #00aa00;
+    }
+    
+    tr:nth-child(even) {
+      background-color: #000000;
+    }
+
+    .yellow {
+      color: #00aa00;
+    }
+
+    .font-size-small {
+      font-size: 14px;
+    }
+  </style>
+  
+</head>
+
+<body>
+  <div class="main-header-div">
+    <h1 class="main-header" style="margin-top:50px;">
+      clexer; lexical analyzer for C language
+    </h1>
+  </div>
+
+  <div id="app" class="container"><p>You can download the JSON file of the tokens or view them here.</p></div>
+
+  <div class="skills" id="skills">
+    <form enctype="multipart/form-data" action="/" method="get" style="display: inline-block;">
+        <button class="btn" type="submit" value="home" >Home</button>
+    </form>
+
+    <form enctype="multipart/form-data" action="/panel" method="get" style="display: inline-block;">
+        <button class="btn" type="submit" value="panel" >View</button>
+    </form>
+
+    <form enctype="multipart/form-data" action="/download" method="post" style="display: inline-block;">
+        <button class="btn" type="submit" value="getjson" >Get JSON</button>
+    </form>
+  </div>
+
+  <div id="app" class="container" style="margin-top: 40px;">
+    <table>
+      <tr>
+        <th class="yellow">Token Type</th>
+        <th class="yellow">Literal</th>
+        <th class="yellow">Row</th>
+        <th class="yellow">Col</th>
+        <th class="yellow">BlockNo</th>
+      </tr>
+  
+      {{range .Tokens}}
+          <tr>
+              <td>{{.Type}}</td>
+              <td>{{.Literal}}</td>
+              <td>{{.Row}}</td>
+              <td>{{.Col}}</td>
+              <td>{{.BlockNo}}</td>
+          </tr>
+      {{end}}
+    </table>
+  </div>
+
+</body>
+</html>

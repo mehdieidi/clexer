@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>clexer</title>
+  <link rel="stylesheet" href="../static/style.css">
+  <link href="https://fonts.googleapis.com/css?family=Fira+Code:400,700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+  <div class="main-header-div">
+    <h1 class="main-header" style="margin-top:50px;">
+      clexer; lexical analyzer for C language
+    </h1>
+  </div>
+
+  <div id="app" class="container"><p>Upload a C source code to apply a lexical analysis on it.</p></div>
+
+  <div class="skills" id="skills">
+    <form enctype="multipart/form-data" action="/upload" method="post">
+      <input type="file" name="myFile" style="border: none; background: none;"/>
+      <input class="btn" type="submit" value="upload" />
+    </form>
+  </div>
+
+</body>
+</html>
