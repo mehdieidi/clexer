@@ -5,268 +5,240 @@ import (
 	"github.com/MehdiEidi/clexer/token"
 )
 
-var (
-	row     uint = 1
-	col     uint
-	blockNo uint
-)
-
 type Lexer struct {
 	input        string // the src code
 	position     int    // current position in input (points to current char)
 	readPosition int    // current reading position in input (after current char)
 	ch           byte   // current char under examination
-}
-
-// New gets a src code, generates and returns a lexer.
-func New(input string) *Lexer {
-	l := &Lexer{input: input}
-	l.readChar()
-	return l
+	row          uint
+	col          uint
+	blockNo      uint
 }
 
 // NextToken returns next token in the src code using it's lexer l.
-func (l *Lexer) NextToken() token.Token {
-	var tok token.Token
-
+func (l *Lexer) NextToken() (tok token.Token) {
 	l.skipWhiteSpace()
+	l.skipComments()
 
 	switch l.ch {
 	case '-':
 		if l.peekChar() == '-' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.DEC, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.DEC, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else if l.peekChar() == '=' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.MINUSAS, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.MINUSAS, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else if l.peekChar() == '>' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.ARROW, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.ARROW, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else {
-			col++
-			tok = newToken(token.MINUS, l.ch)
+			tok = token.New(token.MINUS, string(l.ch), 0, 0, 0)
 		}
 
 	case '!':
 		if l.peekChar() == '=' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.NOT_EQ, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.NOT_EQ, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else {
-			col++
-			tok = newToken(token.EXCLA, l.ch)
+			tok = token.New(token.EXCLA, string(l.ch), 0, 0, 0)
 		}
 
 	case '/':
 		if l.peekChar() == '=' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.DIVAS, Literal: string(ch) + string(l.ch)}
-		} else if l.peekChar() == '/' {
+			tok = token.New(token.DIVAS, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
 			l.readChar()
-			col++
-			l.readChar()
-			tok = l.lineComment()
-			return tok
-		} else if l.peekChar() == '*' {
-			l.readChar()
-			col++
-			l.readChar()
-			tok = l.blockComment()
 			return tok
 		} else {
-			col++
-			tok = newToken(token.SLASH, l.ch)
+			tok = token.New(token.SLASH, string(l.ch), 0, 0, 0)
 		}
 
 	case '*':
 		if l.peekChar() == '=' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.MINUSAS, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.MULTAS, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else {
-			col++
-			tok = newToken(token.ASTERISK, l.ch)
+			tok = token.New(token.ASTERISK, string(l.ch), 0, 0, 0)
 		}
 
 	case '<':
 		if l.peekChar() == '=' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.STEQ, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.STEQ, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else if l.peekChar() == '<' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.LSHIFT, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.LSHIFT, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else {
-			col++
-			tok = newToken(token.ST, l.ch)
+			tok = token.New(token.ST, string(l.ch), 0, 0, 0)
 		}
 
 	case '>':
 		if l.peekChar() == '=' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.GTEQ, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.GTEQ, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else if l.peekChar() == '>' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.RSHIFT, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.RSHIFT, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else {
-			col++
-			tok = newToken(token.GT, l.ch)
+			tok = token.New(token.GT, string(l.ch), 0, 0, 0)
 		}
 
 	case '=':
 		if l.peekChar() == '=' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.EQ, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.EQ, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else {
-			col++
-			tok = newToken(token.ASSIGN, l.ch)
+			tok = token.New(token.ASSIGN, string(l.ch), 0, 0, 0)
 		}
 
 	case '"':
-		if isLetter(l.peekChar()) || isEscapeSequence(l.peekChar()) {
-			txt := l.text()
-			tok = token.Token{Type: token.TEXT, Literal: txt}
-			col++
-		}
+		curCol := l.col
+		txt := l.readText()
+		tok = token.New(token.TEXT, txt, l.row, curCol, l.blockNo)
+		l.readChar()
+		return tok
 
 	case '.':
-		col++
-		tok = newToken(token.DOT, l.ch)
+		tok = token.New(token.DOT, string(l.ch), 0, 0, 0)
 
 	case '[':
-		col++
-		tok = newToken(token.LBRACK, l.ch)
+		tok = token.New(token.LBRACK, string(l.ch), 0, 0, 0)
 
 	case ']':
-		col++
-		tok = newToken(token.RBRACK, l.ch)
+		tok = token.New(token.RBRACK, string(l.ch), 0, 0, 0)
 
 	case ':':
-		col++
-		tok = newToken(token.COLON, l.ch)
+		tok = token.New(token.COLON, string(l.ch), 0, 0, 0)
 
 	case '?':
-		col++
-		tok = newToken(token.QUESTION, l.ch)
+		tok = token.New(token.QUESTION, string(l.ch), 0, 0, 0)
 
 	case ';':
-		col++
-		tok = newToken(token.SEMICOLON, l.ch)
+		tok = token.New(token.SEMICOLON, string(l.ch), 0, 0, 0)
 
 	case '%':
 		if l.peekChar() == '=' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.PERCENTAS, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.PERCENTAS, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else {
-			col++
-			tok = newToken(token.PERCENT, l.ch)
+			tok = token.New(token.PERCENT, string(l.ch), 0, 0, 0)
 		}
 
 	case '&':
 		if l.peekChar() == '&' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.AND, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.AND, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else if l.peekChar() == '=' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.AMPERAS, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.AMPERAS, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else {
-			col++
-			tok = newToken(token.AMPER, l.ch)
+			tok = token.New(token.AMPER, string(l.ch), 0, 0, 0)
 		}
 
 	case '^':
 		if l.peekChar() == '=' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.XORAS, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.XORAS, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else {
-			col++
-			tok = newToken(token.XOR, l.ch)
+			tok = token.New(token.XOR, string(l.ch), 0, 0, 0)
 		}
 
 	case '|':
 		if l.peekChar() == '=' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.PIPEAS, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.PIPEAS, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else if l.peekChar() == '|' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.OR, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.OR, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else {
-			col++
-			tok = newToken(token.PIPE, l.ch)
+			tok = token.New(token.PIPE, string(l.ch), 0, 0, 0)
 		}
 
 	case '~':
-		col++
-		tok = newToken(token.TILDA, l.ch)
+		tok = token.New(token.TILDA, string(l.ch), 0, 0, 0)
 
 	case '(':
-		col++
-		tok = newToken(token.LPAREN, l.ch)
+		tok = token.New(token.LPAREN, string(l.ch), 0, 0, 0)
 
 	case ')':
-		col++
-		tok = newToken(token.RPAREN, l.ch)
+		tok = token.New(token.RPAREN, string(l.ch), 0, 0, 0)
 
 	case ',':
-		col++
-		tok = newToken(token.COMMA, l.ch)
+		tok = token.New(token.COMMA, string(l.ch), 0, 0, 0)
 
 	case '+':
 		if l.peekChar() == '+' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.INC, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.INC, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else if l.peekChar() == '=' {
-			col += 2
 			ch := l.ch
 			l.readChar()
-			tok = token.Token{Type: token.PLUSAS, Literal: string(ch) + string(l.ch)}
+			tok = token.New(token.PLUSAS, string(ch)+string(l.ch), l.row, l.col-1, l.blockNo)
+			l.readChar()
+			return tok
 		} else {
-			col++
-			tok = newToken(token.PLUS, l.ch)
+			tok = token.New(token.PLUS, string(l.ch), 0, 0, 0)
 		}
 
 	case '{':
-		col++
-		blockNo++
-		tok = newToken(token.LBRACE, l.ch)
+		l.blockNo++
+		tok = token.New(token.LBRACE, string(l.ch), 0, 0, 0)
 
 	case '}':
-		col++
-		blockNo--
-		tok = newToken(token.RBRACE, l.ch)
+		l.blockNo--
+		tok = token.New(token.RBRACE, string(l.ch), 0, 0, 0)
 
 	case 0:
 		tok.Literal = ""
@@ -274,25 +246,29 @@ func (l *Lexer) NextToken() token.Token {
 
 	default:
 		if isLetter(l.ch) {
+			curCol := l.col
+
 			tok.Literal = l.readIdentifier()
 			tok.Type = token.LookupIdent(tok.Literal)
 
-			tok.Col = col
-			tok.Row = row
-			tok.BlockNo = blockNo
+			tok.Col = curCol
+			tok.Row = l.row
+			tok.BlockNo = l.blockNo
 
 			return tok
 		} else if isDigit(l.ch) {
+			curCol := l.col
 			tok = l.readNum()
+			tok.Col = curCol
 			return tok
 		} else {
-			tok = newToken(token.ILLEGAL, l.ch)
+			tok = token.New(token.ILLEGAL, string(l.ch), 0, 0, 0)
 		}
 	}
 
-	tok.Col = col
-	tok.Row = row
-	tok.BlockNo = blockNo
+	tok.Col = l.col
+	tok.Row = l.row
+	tok.BlockNo = l.blockNo
 
 	l.readChar()
 
@@ -308,29 +284,33 @@ func (l *Lexer) readChar() {
 	}
 	l.position = l.readPosition
 	l.readPosition++
+	l.col++
 }
 
-// skipWhiteSpace skips whitespaces and also updates col and row numbers.
+// skipWhiteSpace skips whitespaces also updates col and row numbers.
 func (l *Lexer) skipWhiteSpace() {
 	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
 		switch l.ch {
-		case ' ':
-			col++
 		case '\t':
-			col += 4
+			l.col++
 		case '\n':
-			col = 0
-			row++
+			l.readChar()
+			l.col--
+			l.row++
+			continue
+		case '\r':
+			l.readChar()
+			l.col = 1
+			continue
 		}
 		l.readChar()
 	}
 }
 
-// readIdentifier reads and returns a whole word also updates col.
+// readIdentifier reads and returns a whole word.
 func (l *Lexer) readIdentifier() string {
 	position := l.position
 	for isLetter(l.ch) {
-		col++
 		l.readChar()
 	}
 	return l.input[position:l.position]
@@ -345,82 +325,25 @@ func (l *Lexer) peekChar() byte {
 	}
 }
 
-// text returns the string between ""
-func (l *Lexer) text() string {
+// readText returns the string between ""
+func (l *Lexer) readText() string {
 	l.readChar() // skip starting "
-	col++
 	position := l.position
 	for l.ch != '"' {
-		col++
+		// EOF
+		if l.ch == 0 {
+			break
+		}
 		l.readChar()
+		l.skipWhiteSpace()
 	}
 	return l.input[position:l.position]
 }
 
-// lineComment returns a token of a line comment also updates row and col.
-func (l *Lexer) lineComment() token.Token {
-	var tok token.Token
-
-	position := l.position
-	for l.ch != '\n' {
-		col++
-		l.readChar()
-	}
-
-	tok = token.Token{Type: token.COMMENT, Literal: l.input[position : l.position-1], Row: row, Col: col, BlockNo: blockNo}
-
-	l.readChar()
-
-	if l.ch == '\r' {
-		l.readChar()
-	}
-
-	row++
-	col = 0
-
-	return tok
-}
-
-// blockComment returns a token of a block comment also updates row and col.
-func (l *Lexer) blockComment() token.Token {
-	var tok token.Token
-
-	position := l.position
-	for !(l.ch == '*' && l.peekChar() == '/') {
-		if l.ch == '\n' {
-			row++
-			col = 0
-			l.readChar()
-		} else if l.ch == '\r' {
-			l.readChar()
-		} else {
-			col++
-			l.readChar()
-		}
-	}
-
-	tok = token.Token{Type: token.COMMENT, Literal: l.input[position:l.position], Row: row, Col: col, BlockNo: blockNo}
-
-	l.readChar()
-
-	if l.ch == '\r' {
-		l.readChar()
-	}
-
-	col = 0
-
-	l.readChar()
-
-	return tok
-}
-
-// readNum reads a number either decimal or integer and returns the appropriate token also updates row and col.
-func (l *Lexer) readNum() token.Token {
-	var tok token.Token
-
+// readNum reads a number either decimal or integer and returns the appropriate token.
+func (l *Lexer) readNum() (tok token.Token) {
 	position := l.position
 	for isDigit(l.ch) {
-		col++
 		l.readChar()
 	}
 
@@ -428,41 +351,88 @@ func (l *Lexer) readNum() token.Token {
 
 	if l.ch == '.' {
 		l.readChar()
-		col++
 
 		position = l.position
 		for isDigit(l.ch) {
-			col++
 			l.readChar()
 		}
 
 		decPart := l.input[position:l.position]
 
-		tok = token.Token{Type: token.DECIMAL, Literal: string(intPart) + "." + string(decPart), Row: row, Col: col, BlockNo: blockNo}
-
-		return tok
+		tok = token.New(token.DECIMAL, intPart+"."+decPart, l.row, l.col, l.blockNo)
+		return
 	}
 
-	tok = token.Token{Type: token.INTEGER, Literal: string(intPart), Row: row, Col: col, BlockNo: blockNo}
-
-	return tok
+	tok = token.New(token.INTEGER, intPart, l.row, l.col, l.blockNo)
+	return
 }
 
-func newToken(tokenType token.TokenType, ch byte) token.Token {
-	return token.Token{Type: tokenType, Literal: string(ch)}
+// skipLineComment just ignores a line comment.
+func (l *Lexer) skipLineComment() {
+	for l.ch != '\r' {
+		l.readChar()
+	}
+
+	l.readChar()
+
+	if l.ch == '\n' {
+		l.row++
+		l.readChar()
+	}
+	l.col = 1
 }
 
+// skipBlockComment just ignores a block comment.
+func (l *Lexer) skipBlockComment() {
+	for !(l.ch == '*' && l.peekChar() == '/') {
+		if l.ch == '\n' {
+			l.row++
+			l.readChar()
+			l.col--
+		} else if l.ch == '\r' {
+			l.readChar()
+			l.col = 1
+		} else {
+			l.readChar()
+		}
+	}
+
+	l.readChar() // skip *
+	l.readChar() // skip /
+
+	l.skipWhiteSpace()
+}
+
+// skipComments just ignores any sort of comment.
+func (l *Lexer) skipComments() {
+	for l.ch == '/' && (l.peekChar() == '/' || l.peekChar() == '*') {
+		if l.ch == '/' && l.peekChar() == '/' {
+			// skip slash slash
+			l.readChar()
+			l.readChar()
+			l.skipLineComment()
+		}
+		if l.ch == '/' && l.peekChar() == '*' {
+			l.skipBlockComment()
+		}
+		l.skipWhiteSpace()
+	}
+}
+
+// New gets a src code, generates and returns a lexer.
+func New(input string) *Lexer {
+	l := &Lexer{input: input, col: 1, row: 1}
+	l.readChar() // get to the first char
+	l.col--
+	return l
+}
+
+// isLetter returns true if ch is a letter. _ is considered as a letter too.
 func isLetter(ch byte) bool {
 	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
 }
 
+// isDigit returns true if ch is a digit.
 func isDigit(ch byte) bool {
 	return '0' <= ch && ch <= '9'
-}
-
-func isEscapeSequence(ch byte) bool {
-	if ch == '\n' || ch == '\r' || ch == '\a' || ch == '\b' || ch == '\f' || ch == '\t' || ch == '\v' || ch == '\\' || ch == '\'' || ch == '\000' {
-		return true
-	}
-	return false
 }
