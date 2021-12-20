@@ -17,9 +17,7 @@ type Lexer struct {
 
 // NextToken returns next token in the src code using it's lexer l.
 func (l *Lexer) NextToken() (tok token.Token) {
-	l.skipWhiteSpace()
-	l.skipComments()
-	l.skipPreprocessorDirectives()
+	l.skips()
 
 	switch l.ch {
 	case '-':
@@ -427,6 +425,32 @@ func (l *Lexer) skipPreprocessorDirectives() {
 		}
 		l.skipWhiteSpace()
 	}
+}
+
+func (l *Lexer) skips() {
+	l.skipComments()
+	l.skipPreprocessorDirectives()
+	l.skipWhiteSpace()
+
+	l.skipComments()
+	l.skipWhiteSpace()
+	l.skipPreprocessorDirectives()
+
+	l.skipWhiteSpace()
+	l.skipComments()
+	l.skipPreprocessorDirectives()
+
+	l.skipWhiteSpace()
+	l.skipPreprocessorDirectives()
+	l.skipComments()
+
+	l.skipPreprocessorDirectives()
+	l.skipComments()
+	l.skipWhiteSpace()
+
+	l.skipPreprocessorDirectives()
+	l.skipWhiteSpace()
+	l.skipComments()
 }
 
 // New gets a src code, generates and returns a lexer.
