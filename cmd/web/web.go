@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"text/template"
 
 	"github.com/MehdiEidi/clexer/lexer"
@@ -43,8 +44,12 @@ func upload(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
+	if filepath.Ext(handler.Filename) != ".c" {
+		log.Fatal("file must be a C source code")
+	}
+
 	// save the file
-	dst, err := os.Create("../../input/uploaded/" + handler.Filename)
+	dst, err := os.Create("../../input/source.c")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

@@ -19,6 +19,7 @@ type Lexer struct {
 func (l *Lexer) NextToken() (tok token.Token) {
 	l.skipWhiteSpace()
 	l.skipComments()
+	l.skipPreprocessorDirectives()
 
 	switch l.ch {
 	case '-':
@@ -414,6 +415,15 @@ func (l *Lexer) skipComments() {
 		}
 		if l.ch == '/' && l.peekChar() == '*' {
 			l.skipBlockComment()
+		}
+		l.skipWhiteSpace()
+	}
+}
+
+func (l *Lexer) skipPreprocessorDirectives() {
+	for l.ch == '#' {
+		for l.ch != '\n' {
+			l.readChar()
 		}
 		l.skipWhiteSpace()
 	}

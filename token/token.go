@@ -138,7 +138,7 @@ var keywords = map[string]TokenType{
 	"enum":     ENUM,
 	"extern":   EXTERN,
 	"float":    FLOAT,
-	"for":      FLOAT,
+	"for":      FOR,
 	"goto":     GOTO,
 }
 
