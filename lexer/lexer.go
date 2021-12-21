@@ -309,7 +309,7 @@ func (l *Lexer) skipWhiteSpace() {
 // readIdentifier reads and returns a whole word.
 func (l *Lexer) readIdentifier() string {
 	position := l.position
-	for isLetter(l.ch) {
+	for isLetter(l.ch) || isDigit(l.ch) {
 		l.readChar()
 	}
 	return l.input[position:l.position]
